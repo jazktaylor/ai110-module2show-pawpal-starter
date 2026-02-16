@@ -1,16 +1,41 @@
 # PawPal+ Project Reflection
 
 ## 1. System Design
+- Add a pet with detailed descriptions
+- Add pet care schedule (grooming, feeding, going for walks...)
+- See tasks for the day
 
 **a. Initial design**
 
 - Briefly describe your initial UML design.
+    Overall, the design follows a clear ownership hierarchy (User → Pet → Task/Schedule) with separation of concerns between data storage (Pet, Task), automation (GroomingSchedule), and presentation/aggregation (DailyTasks).
+
 - What classes did you include, and what responsibilities did you assign to each?
+    - Pet - Stores pet info with add() method and CRUD operations
+    - Task - Manages grooming and care tasks with add() method and completion tracking
+    - GroomingSchedule - Handles recurring schedules that create tasks
+    - DailyTasks - Displays and filters tasks for today
+    - User - Root entity that owns pets and accesses all features
 
 **b. Design changes**
 
 - Did your design change during implementation?
+    Yes
 - If yes, describe at least one change and why you made it.
+    I fixed the missing relationships and the logic bottlenecks by implementing: 
+    - Duration & Priority - Tasks now have duration_minutes and priority fields for realistic scheduling
+    - Pet-Schedule Link - Moved schedules from User to Pet (schedules belong to specific pets)
+    - Owner Constraints - Added available_minutes_per_day to User for time-based planning
+    - UUID IDs - Replaced timestamp IDs with UUIDs to eliminate collision risk
+    
+    - Task-by-Pet Filtering - New get_tasks_for_pet() method to query tasks by specific pet
+    - Daily Planning - New get_daily_plan() method that:
+        Prioritizes high-priority and overdue tasks
+        Fits tasks into available time budget
+        Returns scheduled + unscheduled tasks
+    - Grooming Auto-Generation - generate_grooming_tasks() creates tasks from schedules based on frequency
+    - Task Utilities - Added is_today(), is_overdue(), get_today_pending(), get_overdue_tasks()
+    - Data Consistency - Single task collection in DailyTasks (no more duplication)
 
 ---
 

@@ -1,3 +1,13 @@
+## Smarter Scheduling
+
+The Scheduler class now includes several advanced features:
+
+- Efficient task retrieval using list comprehensions for all, pending, and overdue tasks across owners and pets.
+- Automatic detection of scheduling conflicts for pets, with lightweight warnings instead of program crashes.
+- Recurring task support: daily and weekly tasks are automatically rescheduled when completed.
+- Flexible sorting and filtering of tasks by time, status, and pet.
+
+These improvements make scheduling more robust, efficient, and user-friendly for pet owners.
 # PawPal+ (Module 2 Project)
 
 You are building **PawPal+**, a Streamlit app that helps a pet owner plan care tasks for their pet.

@@ -61,9 +61,31 @@ class Task:
             if hasattr(self, key):
                 setattr(self, key, value)
 
-    def mark_complete(self):
-        """Mark the task as completed."""
+    def mark_complete(self, pet: 'Pet' = None):
+        """
+        Mark the task as completed. If the task is daily or weekly, auto-create the next occurrence.
+        If a Pet instance is provided, the new task is added to the pet.
+        """
         self.completed = True
+        # Auto-create next occurrence for daily/weekly tasks
+        if self.frequency_days in (1, 7) and pet is not None:
+            next_due = self.next_due_date()
+            # Avoid duplicate next occurrence
+            exists = any(
+                t.title == self.title and t.due_date == next_due and t.pet_id == self.pet_id
+                for t in pet.get_tasks()
+            )
+            if not exists:
+                new_task = Task(
+                    title=self.title,
+                    pet_id=self.pet_id,
+                    task_type=self.task_type,
+                    due_date=next_due,
+                    duration_minutes=self.duration_minutes,
+                    frequency_days=self.frequency_days,
+                    priority=self.priority
+                )
+                pet.add_task(new_task)
 
     def is_today(self) -> bool:
         """Return True if the task is due today."""
@@ -147,6 +169,23 @@ class Owner:
     owner_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     pets: List[Pet] = field(default_factory=list)
 
+    def filter_tasks(self, status: str = None, pet_name: str = None) -> List[Task]:
+        """
+        Filter all tasks by completion status ('pending', 'completed', 'overdue') or pet name.
+        Returns a list of matching Task objects.
+        """
+        tasks = self.get_all_tasks()
+        if pet_name:
+            pet_ids = [pet.pet_id for pet in self.pets if pet.name == pet_name]
+            tasks = [t for t in tasks if t.pet_id in pet_ids]
+        if status == 'pending':
+            tasks = [t for t in tasks if not t.completed and not t.is_overdue()]
+        elif status == 'completed':
+            tasks = [t for t in tasks if t.completed]
+        elif status == 'overdue':
+            tasks = [t for t in tasks if t.is_overdue()]
+        return tasks
+
     def add_pet(self, pet: Pet):
         """Add a pet to the owner."""
         self.pets.append(pet)
@@ -160,24 +199,15 @@ class Owner:
 
     def get_all_tasks(self) -> List[Task]:
         """Return all tasks for all pets."""
-        tasks = []
-        for pet in self.pets:
-            tasks.extend(pet.get_tasks())
-        return tasks
+        return [task for pet in self.pets for task in pet.get_tasks()]
 
     def get_all_pending_tasks(self) -> List[Task]:
         """Return all incomplete tasks for all pets."""
-        tasks = []
-        for pet in self.pets:
-            tasks.extend(pet.get_pending_tasks())
-        return tasks
+        return [task for pet in self.pets for task in pet.get_pending_tasks()]
 
     def get_all_overdue_tasks(self) -> List[Task]:
         """Return all overdue tasks for all pets."""
-        tasks = []
-        for pet in self.pets:
-            tasks.extend(pet.get_overdue_tasks())
-        return tasks
+        return [task for pet in self.pets for task in pet.get_overdue_tasks()]
 
     def assign_task_to_pet(self, pet_id: str, task: Task):
         """Assign a task to a specific pet."""
@@ -229,9 +259,41 @@ class Scheduler:
     """
     Central system to retrieve, organize, and manage tasks across all pets and owners.
     """
+
     def __init__(self):
         """Initialize the Scheduler system."""
-        self.owners: Dict[str, Owner] = {}
+        self.owners = {}
+
+    def warn_on_task_conflicts(self) -> list:
+        """
+        Lightweight conflict detection: returns a list of warning messages for pets with conflicting tasks (same due_date).
+        Does not raise exceptions or crash the program.
+        """
+        warnings = []
+        conflicts = self.detect_task_conflicts()
+        for pet_id, due_date, tlist in conflicts:
+            task_titles = ', '.join(t.title for t in tlist)
+            warnings.append(
+                f"Warning: Pet {pet_id} has {len(tlist)} tasks scheduled on {due_date}: {task_titles}"
+            )
+        return warnings
+
+    def detect_task_conflicts(self) -> list:
+        """
+        Detects and returns a list of conflicts: (pet_id, due_date, [conflicting_tasks])
+        where two or more tasks for the same pet are scheduled at the same time (same due_date).
+        """
+        from collections import defaultdict
+        conflicts = []
+        for owner in self.owners.values():
+            for pet in owner.pets:
+                by_date = defaultdict(list)
+                for t in pet.get_tasks():
+                    by_date[t.due_date].append(t)
+                for due_date, tlist in by_date.items():
+                    if len(tlist) > 1:
+                        conflicts.append((pet.pet_id, due_date, tlist))
+        return conflicts
 
     def add_owner(self, owner: Owner):
         """Add an owner to the system."""
@@ -243,31 +305,19 @@ class Scheduler:
 
     def get_all_tasks(self) -> List[Task]:
         """Return all tasks for all owners."""
-        tasks = []
-        for owner in self.owners.values():
-            tasks.extend(owner.get_all_tasks())
-        return tasks
+        return [task for owner in self.owners.values() for task in owner.get_all_tasks()]
 
     def get_all_pending_tasks(self) -> List[Task]:
         """Return all incomplete tasks for all owners."""
-        tasks = []
-        for owner in self.owners.values():
-            tasks.extend(owner.get_all_pending_tasks())
-        return tasks
+        return [task for owner in self.owners.values() for task in owner.get_all_pending_tasks()]
 
     def get_all_overdue_tasks(self) -> List[Task]:
         """Return all overdue tasks for all owners."""
-        tasks = []
-        for owner in self.owners.values():
-            tasks.extend(owner.get_all_overdue_tasks())
-        return tasks
+        return [task for owner in self.owners.values() for task in owner.get_all_overdue_tasks()]
 
     def generate_all_grooming_tasks(self) -> List[Task]:
         """Generate and assign grooming tasks for all owners."""
-        new_tasks = []
-        for owner in self.owners.values():
-            new_tasks.extend(owner.generate_grooming_tasks())
-        return new_tasks
+        return [task for owner in self.owners.values() for task in owner.generate_grooming_tasks()]
 
     def get_daily_plan_for_owner(self, owner_id: str) -> Optional[dict]:
         """Return the daily plan for a specific owner."""
@@ -275,3 +325,9 @@ class Scheduler:
         if owner:
             return owner.get_daily_plan()
         return None
+
+    def sort_by_time(self, tasks: List[Task]) -> List[Task]:
+        """
+        Sort Task objects by their due_date attribute.
+        """
+        return sorted(tasks, key=lambda t: t.due_date)
