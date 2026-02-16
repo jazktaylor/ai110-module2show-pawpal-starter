@@ -49,7 +49,9 @@
 **b. Tradeoffs**
 
 - Describe one tradeoff your scheduler makes.
+    The Scheduler class methods get_all_tasks, get_all_pending_tasks, get_all_overdue_tasks, and generate_all_grooming_tasks have been refactored to use list comprehensions for improved readability and performance. This makes the code cleaner and more efficient.
 - Why is that tradeoff reasonable for this scenario?
+    List comprehensions are great for simplicity and speed, but explicit loops offer more control and flexibility, especially for complex or large-scale operations.
 
 ---
 

@@ -1,4 +1,4 @@
-, efficient, and user-friendly for pet owners.
+
 # PawPal+ (Module 2 Project)
 
 You are building **PawPal+**, a Streamlit app that helps a pet owner plan care tasks for their pet.
@@ -52,7 +52,7 @@ The Scheduler class now includes several advanced features:
 - Recurring task support: daily and weekly tasks are automatically rescheduled when completed.
 - Flexible sorting and filtering of tasks by time, status, and pet.
 
-These improvements make scheduling more robust
+These improvements make scheduling more robust, efficient, and user-friendly for pet owners.
 
 ## Testing PawPal+
 
@@ -63,4 +63,36 @@ python -m pytest
 ```
 
 The test suite covers core scheduling behaviors, including task addition and editing, conflict detection, recurring task handling, and plan generation logic. This ensures the app remains reliable as you add features or refactor code.
+## Confidence Level: ⭐⭐⭐⭐
 
+# Features
+
+- **Centralized Scheduling:**  
+	The `Scheduler` class manages all owners, pets, and tasks, providing system-wide sorting, conflict detection, and daily planning.
+
+- **Task Sorting:**  
+	Tasks are sorted chronologically using the `sort_by_time()` method, ensuring schedules are always presented in order.
+
+- **Conflict Detection:**  
+	The scheduler automatically flags duplicate or overlapping tasks for the same pet on the same day, using `warn_on_task_conflicts()` and `detect_task_conflicts()`.
+
+- **Recurring Tasks:**  
+	Tasks can be set to repeat daily or weekly. When a recurring task is marked complete, the system auto-generates the next occurrence.
+
+- **Priority-Based Planning:**  
+	Daily plans are optimized based on task priority and available time, ensuring high-priority tasks are scheduled first.
+
+- **Owner and Pet Management:**  
+	Owners can add multiple pets, each with their own tasks and grooming schedules.
+
+- **Grooming Schedule Automation:**  
+	Grooming schedules automatically generate tasks for pets based on frequency and completion history.
+
+- **Task Filtering:**  
+	Tasks can be filtered by status (pending, completed, overdue) and by pet.
+
+- **Overdue and Pending Tracking:**  
+	The system tracks overdue and pending tasks for each pet and owner.
+
+- **Streamlined UI Integration:**  
+	All sorting, conflict detection, and planning algorithms are integrated with the Streamlit UI for real-time feedback and professional display.

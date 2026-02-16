@@ -1,0 +1,95 @@
+# To generate the UML diagram, paste the following Mermaid code into a Mermaid-compatible tool (like mermaid.live or VS Code Mermaid extension), then export as PNG and save as uml_final.png.
+
+```
+classDiagram
+    class Scheduler {
+        +owners: dict
+        +add_owner(owner)
+        +get_owner(owner_id)
+        +get_all_tasks()
+        +get_all_pending_tasks()
+        +get_all_overdue_tasks()
+        +generate_all_grooming_tasks()
+        +get_daily_plan_for_owner(owner_id)
+        +sort_by_time(tasks)
+        +warn_on_task_conflicts()
+        +detect_task_conflicts()
+    }
+    class Owner {
+        +name
+        +available_minutes_per_day
+        +owner_id
+        +pets: List~Pet~
+        +add_pet(pet)
+        +get_pet(pet_id)
+        +get_all_tasks()
+        +get_all_pending_tasks()
+        +get_all_overdue_tasks()
+        +assign_task_to_pet(pet_id, task)
+        +get_tasks_for_pet(pet_id)
+        +generate_grooming_tasks()
+        +get_daily_plan()
+        +filter_tasks(status, pet_name)
+    }
+    class Pet {
+        +name
+        +species
+        +breed
+        +age
+        +pet_id
+        +schedules: List~GroomingSchedule~
+        +tasks: List~Task~
+        +add(**kwargs)
+        +add_schedule(schedule)
+        +add_task(task)
+        +get_tasks()
+        +get_pending_tasks()
+        +get_overdue_tasks()
+    }
+    class Task {
+        +title
+        +pet_id
+        +task_type
+        +due_date
+        +duration_minutes
+        +frequency_days
+        +priority
+        +task_id
+        +completed
+        +add(**kwargs)
+        +mark_complete(pet)
+        +is_today()
+        +is_overdue()
+        +next_due_date()
+    }
+    class GroomingSchedule {
+        +pet_id
+        +task_type
+        +frequency_days
+        +duration_minutes
+        +priority
+        +schedule_id
+        +last_completed
+        +create_task(pet_name)
+        +needs_task_today()
+    }
+    class DailyTasks {
+        +tasks: List~Task~
+        +add_task(task)
+        +get_today_tasks()
+        +get_pending_tasks()
+        +get_today_pending()
+        +get_overdue_tasks()
+        +remove_task(task_id)
+    }
+
+    Scheduler --> Owner : manages
+    Owner --> Pet : owns
+    Pet --> Task : has
+    Pet --> GroomingSchedule : has
+    GroomingSchedule --> Task : creates
+    Owner --> Task : assigns
+    DailyTasks --> Task : contains
+```
+
+# Save the exported PNG as uml_final.png in your project folder.

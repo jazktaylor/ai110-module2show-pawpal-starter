@@ -1,7 +1,9 @@
 import streamlit as st
-from pawpal_system import Owner, Pet, Task
+from pawpal_system import Owner, Pet, Task, Scheduler
 
 st.set_page_config(page_title="PawPal+", page_icon="🐾", layout="centered")
+if "scheduler" not in st.session_state:
+    st.session_state.scheduler = Scheduler()
 
 st.title("🐾 PawPal+")
 
@@ -46,6 +48,7 @@ owner_name = st.text_input("Owner name", value="Jordan")
 available_minutes = st.number_input("Owner's available minutes per day", min_value=1, max_value=1440, value=120)
 if "owner" not in st.session_state or st.session_state.owner.name != owner_name:
     st.session_state.owner = Owner(name=owner_name, available_minutes_per_day=available_minutes)
+    st.session_state.scheduler.add_owner(st.session_state.owner)
 
 # Pet creation and storage
 st.markdown("### Add a Pet")
@@ -73,7 +76,6 @@ if st.session_state.pets:
 else:
     st.info("No pets yet. Add one above.")
 
-# Task scheduling UI
 st.markdown("### Schedule a Task for a Pet")
 if st.session_state.pets:
     pet_options = {f"{p.name} ({p.species})": p for p in st.session_state.pets}
@@ -94,33 +96,25 @@ if st.session_state.pets:
         selected_pet.add_task(new_task)
         st.success(f"Added task '{task_title}' for {selected_pet.name}")
 
-    # Show tasks for selected pet
-    if selected_pet.get_tasks():
-        st.write(f"Current tasks for {selected_pet.name}:")
-        st.table([{"Title": t.title, "Duration": t.duration_minutes, "Priority": t.priority, "Completed": t.completed} for t in selected_pet.get_tasks()])
-    else:
-        st.info(f"No tasks for {selected_pet.name} yet.")
+    # Show all tasks for all pets, sorted and with conflict warnings
+    all_tasks = st.session_state.scheduler.get_all_tasks()
+    sorted_tasks = st.session_state.scheduler.sort_by_time(all_tasks)
+    st.write("All tasks (chronological order):")
+    st.table([
+        {"Pet": next((p.name for p in st.session_state.pets if p.pet_id == t.pet_id), "Unknown"),
+         "Title": t.title,
+         "Due Date": t.due_date,
+         "Duration": t.duration_minutes,
+         "Priority": t.priority,
+         "Completed": t.completed}
+        for t in sorted_tasks
+    ])
+
+    # Show conflict warnings
+    warnings = st.session_state.scheduler.warn_on_task_conflicts()
+    if warnings:
+        st.warning("\n".join(warnings))
 else:
     st.info("Add a pet before scheduling tasks.")
 
-col1, col2, col3 = st.columns(3)
-with col1:
-    task_title = st.text_input("Task title", value="Morning walk")
-with col2:
-    duration = st.number_input("Duration (minutes)", min_value=1, max_value=240, value=20)
-with col3:
-    priority = st.selectbox("Priority", ["low", "medium", "high"], index=2)
-
-if st.button("Add task"):
-    st.session_state.tasks.append(
-        {"title": task_title, "duration_minutes": int(duration), "priority": priority}
-    )
-
-if st.session_state.tasks:
-    st.write("Current tasks:")
-    st.table(st.session_state.tasks)
-else:
-    st.info("No tasks yet. Add one above.")
-
 st.divider()
-...existing code...
