@@ -1,13 +1,4 @@
-## Smarter Scheduling
-
-The Scheduler class now includes several advanced features:
-
-- Efficient task retrieval using list comprehensions for all, pending, and overdue tasks across owners and pets.
-- Automatic detection of scheduling conflicts for pets, with lightweight warnings instead of program crashes.
-- Recurring task support: daily and weekly tasks are automatically rescheduled when completed.
-- Flexible sorting and filtering of tasks by time, status, and pet.
-
-These improvements make scheduling more robust, efficient, and user-friendly for pet owners.
+, efficient, and user-friendly for pet owners.
 # PawPal+ (Module 2 Project)
 
 You are building **PawPal+**, a Streamlit app that helps a pet owner plan care tasks for their pet.
@@ -51,3 +42,25 @@ pip install -r requirements.txt
 5. Add tests to verify key behaviors.
 6. Connect your logic to the Streamlit UI in `app.py`.
 7. Refine UML so it matches what you actually built.
+
+## Smarter Scheduling
+
+The Scheduler class now includes several advanced features:
+
+- Efficient task retrieval using list comprehensions for all, pending, and overdue tasks across owners and pets.
+- Automatic detection of scheduling conflicts for pets, with lightweight warnings instead of program crashes.
+- Recurring task support: daily and weekly tasks are automatically rescheduled when completed.
+- Flexible sorting and filtering of tasks by time, status, and pet.
+
+These improvements make scheduling more robust
+
+## Testing PawPal+
+
+To run the tests for PawPal+, use the following command:
+
+```bash
+python -m pytest
+```
+
+The test suite covers core scheduling behaviors, including task addition and editing, conflict detection, recurring task handling, and plan generation logic. This ensures the app remains reliable as you add features or refactor code.
+
