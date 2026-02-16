@@ -1,3 +1,5 @@
+# --- Imports ---
+import streamlit as st
 
 # --- Imports ---
 from pawpal_system import Owner, Pet, Task, Scheduler
@@ -51,18 +53,17 @@ pet1.add_task(conflict_task2)
 sched = Scheduler()
 sched.add_owner(owner)
 
-# --- Conflict Detection ---
 conflicts = detect_conflicts(owner.get_all_tasks())
 if conflicts:
-    print("\nTask Conflicts Detected:")
+    st.warning("Task Conflicts Detected:")
     for pet_id, due_date, tlist in conflicts:
         pet = owner.get_pet(pet_id)
         pet_name = pet.name if pet else pet_id
-        print(f"- {pet_name} has {len(tlist)} tasks on {due_date}:")
+        st.write(f"- {pet_name} has {len(tlist)} tasks on {due_date}:")
         for t in tlist:
-            print(f"    * {t.title} ({t.duration_minutes} min, Priority: {t.priority})")
+            st.write(f"    * {t.title} ({t.duration_minutes} min, Priority: {t.priority})")
 else:
-    print("\nNo task conflicts detected.")
+    st.success("No task conflicts detected.")
 
 # --- Recurring Task Handler ---
 def handle_recurring_tasks(owner):
